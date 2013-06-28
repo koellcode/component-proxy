@@ -73,7 +73,7 @@ function setupGithubLogin() {
           // Ensure the storage path
           utils.ensureDir(storagePath);
           var configPath = path.resolve(storagePath, 'proxy-config.json');
-          fs.writeFileSync(configPath, JSON.stringify(configJSON));
+          fs.writeFileSync(configPath, JSON.stringify(configJSON, undefined, 2));
         });
     });
   });
