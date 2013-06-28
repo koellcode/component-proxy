@@ -14,7 +14,8 @@
     "fs-extra": "*",
     "unzip": "*",
     "temp": "*",
-    "memory-cache": "*"
+    "memory-cache": "*",
+    "debug": "*"
   },
   "keywords": [
     "component",
