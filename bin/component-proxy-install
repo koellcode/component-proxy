@@ -55,9 +55,13 @@ function runInstall(done) {
 // Make sure we only run the server if the server isn't up
 request.get(util.format('http://127.0.0.1:%d/is-component-proxy', program.port))
   .end(function(err, res) {
-    // Server isn't online... make one
+    if(err) {
+      if(err.code === 'ECONNREFUSED') {
+        return runWithProxy(runInstall);
+      }
+    }
     if(res.statusCode !== 200) {
-      runWithProxy(runInstall);
+      throw new Error('Unknown service running on port %d. Try a different port', program.port);
     }
     runInstall(function() {})
   });
