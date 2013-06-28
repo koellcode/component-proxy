@@ -1,7 +1,7 @@
 {
   "name": "component-proxy",
   "description": "Proxy installs a component",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "dependencies": {
     "component": "*",
     "mime": "*",
@@ -19,7 +19,6 @@
   },
   "keywords": [
     "component",
-    "ssh",
     "install"
   ],
   "author": "Reuven V. Gonzales <reuven@virtru.com>",
