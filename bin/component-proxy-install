@@ -3,6 +3,7 @@ var program = require('commander'),
     path = require('path'),
     util = require('util'),
     utils = require('../lib/utils'),
+    request = require('superagent'),
     createApp = require('../lib/app').createApp,
     spawn = require('child_process').spawn;
 
@@ -15,30 +16,48 @@ program
   .option('--dev', 'Development flag')
   .parse(process.argv);
 
-console.log("Starting proxy server");
 
-var app = createApp(program);
+function runWithProxy(install) {
+  console.log("Starting proxy server");
 
-var server = app.listen(program.port);
+  var app = createApp(program);
+  var server = app.listen(program.port);
 
-var installArgs = ['install', '-r', 'http://127.0.0.1:35555'];
-if(program.dev) {
-  installArgs.push('--dev');
+  install(function() {
+    console.log('Stopping proxy server');
+    server.close();
+    process.exit(0);
+  });
 }
-installArgs = installArgs.concat(process.argv.slice(2));
 
-var installProc = spawn('component', installArgs);
+function runInstall(done) {
+  var installArgs = ['install', '-r', 'http://127.0.0.1:35555'];
+  if(program.dev) {
+    installArgs.push('--dev');
+  }
+  installArgs = installArgs.concat(process.argv.slice(2));
 
-installProc.stdout.on('data', function(data) {
-  process.stdout.write('' + data);
-});
+  var installProc = spawn('component', installArgs);
 
-installProc.stderr.on('data', function(data) {
-  process.stderr.write('' + data);
-});
+  installProc.stdout.on('data', function(data) {
+    process.stdout.write('' + data);
+  });
 
-installProc.on('close', function(code) {
-  console.log('Stopping proxy server');
-  server.close();
-  process.exit(0);
-});
+  installProc.stderr.on('data', function(data) {
+    process.stderr.write('' + data);
+  });
+
+  installProc.on('close', function(code) {
+    done();
+  });
+}
+
+// Make sure we only run the server if the server isn't up
+request.get(util.format('http://127.0.0.1:%d/is-component-proxy', program.port))
+  .end(function(err, res) {
+    // Server isn't online... make one
+    if(res.statusCode !== 200) {
+      runWithProxy(runInstall);
+    }
+    runInstall(function() {})
+  });
