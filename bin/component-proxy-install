@@ -21,12 +21,10 @@ var app = createApp(program);
 
 var server = app.listen(program.port);
 
-var dev = '';
+var installArgs = ['install', '-r', 'http://127.0.0.1:35555'];
 if(program.dev) {
-  dev = '--dev';
+  installArgs.push('--dev');
 }
-
-var installArgs = ['install', '-r', 'http://127.0.0.1:35555', dev];
 installArgs = installArgs.concat(process.argv.slice(2));
 
 var installProc = spawn('component', installArgs);
