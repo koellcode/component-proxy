@@ -1,0 +1,82 @@
+#!/usr/bin/env node
+var program = require('commander'),
+    fs = require('fs'),
+    request = require('superagent'),
+    mkdirp = require('mkdirp'),
+    path = require('path'),
+    utils = require('../lib/utils'),
+    GithubApi = require('github');
+
+var github = new GithubApi({
+  version: '3.0.0'
+});
+
+
+
+program
+  .version('0.0.1')
+  .option('-d, --proxy-storage-dir [proxyStorageDir]', 'Specify the proxy storage directory', utils.expandAndResolve, 
+          utils.expandAndResolve('~/.component-proxy'))
+  .parse(process.argv);
+
+function setupGithubLogin() {
+  // Request the login and password
+  console.log("To setup the component-proxy for private repos we need your login information");
+  console.log("Don't worry, the login information is not stored. It is only used to get an access token");
+  console.log('');
+  console.log('');
+  program.prompt('Github username: ', function(username) {
+    program.password('Github password: ', function(password) {
+      /**
+      github.authenticate({
+        type: 'basic',
+        username: username,
+        password: password
+      });
+      github.authorization.create({ scopes: ['repo'], note: 'component-proxy' }, function(err, result) {
+        if(err) {
+          console.log("An error occurred creating a token with github")
+          console.log(err.message);
+          return process.exit(1);
+        }
+        var configJSON = {
+          username: username,
+          token: result.token
+        }
+        // Save the token on the file system
+        var storagePath = path.resolve(program.proxyStorageDir);
+        console.log(storagePath);
+        // Ensure the storage path
+        utils.ensureDir(storagePath);
+        var configPath = path.resolve(storagePath, 'proxy-config.json');
+        fs.writeFileSync(configPath, JSON.stringify(configJSON));
+      });
+      */
+      request.post('https://api.github.com/authorizations')
+        .auth(username, password)
+        .set('User-Agent', 'component-proxy-cli')
+        .send({ scopes: ['repo'], note: 'component-proxy' })
+        .end(function(res) {
+          if(res.statusCode !== 201) {
+            console.log("An error occurred creating a token with github")
+            console.log(err.message);
+            return process.exit(1);
+          }
+          var result = res.body;
+          var configJSON = {
+            username: username,
+            token: result.token
+          }
+          // Save the token on the file system
+          var storagePath = path.resolve(program.proxyStorageDir);
+          console.log(storagePath);
+          // Ensure the storage path
+          utils.ensureDir(storagePath);
+          var configPath = path.resolve(storagePath, 'proxy-config.json');
+          fs.writeFileSync(configPath, JSON.stringify(configJSON));
+        });
+    });
+  });
+}
+
+setupGithubLogin();
