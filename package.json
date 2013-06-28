@@ -1,5 +1,5 @@
 {
-  "name": "component-proxy-install",
+  "name": "component-proxy",
   "description": "Proxy installs a component",
   "version": "0.0.1",
   "dependencies": {
