@@ -1,0 +1,33 @@
+{
+  "name": "component-proxy-install",
+  "description": "Proxy installs a component",
+  "version": "0.0.1",
+  "dependencies": {
+    "component": "*",
+    "mime": "*",
+    "mkdirp": "*",
+    "express": "*",
+    "commander": "*",
+    "superagent": "*",
+    "github": "*",
+    "underscore": "*",
+    "fs-extra": "*",
+    "unzip": "*",
+    "temp": "*",
+    "memory-cache": "*"
+  },
+  "keywords": [
+    "component",
+    "ssh",
+    "install"
+  ],
+  "author": "Reuven V. Gonzales <reuven@virtru.com>",
+  "bin": {
+    "component-proxy": "./bin/component-proxy",
+    "component-proxy-github-login": "./bin/component-proxy-github-login",
+    "component-proxy-install": "./bin/component-proxy-install"
+  },
+  "engines": {
+    "node": ">= 0.8.22"
+  }
+}
