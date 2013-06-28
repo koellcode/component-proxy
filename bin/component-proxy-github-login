@@ -27,31 +27,6 @@ function setupGithubLogin() {
   console.log('');
   program.prompt('Github username: ', function(username) {
     program.password('Github password: ', function(password) {
-      /**
-      github.authenticate({
-        type: 'basic',
-        username: username,
-        password: password
-      });
-      github.authorization.create({ scopes: ['repo'], note: 'component-proxy' }, function(err, result) {
-        if(err) {
-          console.log("An error occurred creating a token with github")
-          console.log(err.message);
-          return process.exit(1);
-        }
-        var configJSON = {
-          username: username,
-          token: result.token
-        }
-        // Save the token on the file system
-        var storagePath = path.resolve(program.proxyStorageDir);
-        console.log(storagePath);
-        // Ensure the storage path
-        utils.ensureDir(storagePath);
-        var configPath = path.resolve(storagePath, 'proxy-config.json');
-        fs.writeFileSync(configPath, JSON.stringify(configJSON));
-      });
-      */
       request.post('https://api.github.com/authorizations')
         .auth(username, password)
         .set('User-Agent', 'component-proxy-cli')
