@@ -11,18 +11,25 @@ var github = new GithubApi({
   version: '3.0.0'
 });
 
-
-
 program
   .version('0.0.1')
   .option('-d, --proxy-storage-dir [proxyStorageDir]', 'Specify the proxy storage directory', utils.expandAndResolve, 
           utils.expandAndResolve('~/.component-proxy'))
+  .option('--only-run-if-new', 'Only runs the login setup if it has not been done before')
   .parse(process.argv);
 
 function setupGithubLogin() {
+  var storagePath = path.resolve(program.proxyStorageDir);
+  var configPath = path.resolve(storagePath, 'proxy-config.json');
+  if(program.onlyRunIfNew) {
+    if(fs.existsSync(configPath)) {
+      return;
+    }
+  }
   // Request the login and password
   console.log("To setup the component-proxy for private repos we need your login information");
   console.log("Don't worry, the login information is not stored. It is only used to get an access token");
+  console.log("from github that can be revoked from github.com");
   console.log('');
   console.log('');
   program.prompt('Github username: ', function(username) {
@@ -42,12 +49,8 @@ function setupGithubLogin() {
             username: username,
             token: result.token
           }
-          // Save the token on the file system
-          var storagePath = path.resolve(program.proxyStorageDir);
-          console.log(storagePath);
           // Ensure the storage path
           utils.ensureDir(storagePath);
-          var configPath = path.resolve(storagePath, 'proxy-config.json');
           fs.writeFileSync(configPath, JSON.stringify(configJSON, undefined, 2));
         });
     });
