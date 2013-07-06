@@ -1,7 +1,7 @@
 {
   "name": "component-proxy",
   "description": "Proxy installs a component",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "dependencies": {
     "component": "*",
     "mime": "*",
@@ -12,7 +12,7 @@
     "github": "*",
     "underscore": "*",
     "fs-extra": "*",
-    "unzip": "*",
+    "adm-zip": "*",
     "temp": "*",
     "memory-cache": "*",
     "debug": "*"
