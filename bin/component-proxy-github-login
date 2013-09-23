@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-var program = require('commander'),
-    fs = require('fs'),
-    request = require('superagent'),
-    mkdirp = require('mkdirp'),
-    path = require('path'),
-    utils = require('../lib/utils'),
-    GithubApi = require('github');
+var program = require('commander');
+var fs = require('fs');
+var request = require('superagent');
+var mkdirp = require('mkdirp');
+var path = require('path');
+var utils = require('../lib/utils');
+var GithubApi = require('github');
 
 var github = new GithubApi({
   version: '3.0.0'

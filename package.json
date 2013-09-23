@@ -7,7 +7,7 @@
     "mime": "*",
     "mkdirp": "*",
     "express": "*",
-    "commander": "*",
+    "commander": "1.3.2",
     "superagent": "*",
     "github": "*",
     "underscore": "*",
