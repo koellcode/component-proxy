@@ -12,7 +12,6 @@ program
   .option('-p, --port [port]', 'Specify server port number [default=35555]', parseInt, 35555)
   .option('-d, --proxy-storage-dir [proxyStorageDir]', 'Specify the proxy storage directory', utils.expandAndResolve, 
           utils.expandAndResolve('~/.component-proxy'))
-  .option('-c, --max-cache-age [maxCacheAge]', 'The max cache age in seconds [default=60]', parseFloat, 120)
   .parse(process.argv);
 
 var app = createApp(program);
