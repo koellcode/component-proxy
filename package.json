@@ -15,7 +15,8 @@
     "adm-zip": "*",
     "temp": "*",
     "memory-cache": "*",
-    "debug": "*"
+    "debug": "*",
+    "q": "1.0.1"
   },
   "keywords": [
     "component",
