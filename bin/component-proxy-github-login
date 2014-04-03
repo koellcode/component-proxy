@@ -41,7 +41,7 @@ function setupGithubLogin() {
         .end(function(res) {
           if(res.statusCode !== 201) {
             console.log("An error occurred creating a token with github")
-            console.log(err.message);
+            console.log(res.error);
             return process.exit(1);
           }
           var result = res.body;
