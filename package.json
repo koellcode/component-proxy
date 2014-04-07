@@ -16,7 +16,7 @@
     "temp": "*",
     "memory-cache": "*",
     "debug": "*",
-    "q": "1.0.1"
+    "q": "1.0.x"
   },
   "keywords": [
     "component",
