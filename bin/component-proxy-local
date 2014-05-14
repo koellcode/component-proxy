@@ -40,6 +40,16 @@ program.command('remove')
     utils.expandAndResolve('./'))
   .action(remove);
 
+program.on('--help', function(){
+  console.log('  Examples:');
+  console.log('');
+  console.log('    $ component-proxy-local add');
+  console.log('    $ component-proxy-local add -s ./lib/foo -d ~/.component-proxy');
+  console.log('    $ component-proxy-local remove');
+  console.log('    $ component-proxy-local remove -s ./lib/foo -d ~/.component-proxy');
+  console.log('');
+});
+
 program.command('*')
   .action(function() {
     console.log('Invalid command.');
