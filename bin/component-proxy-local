@@ -1,0 +1,107 @@
+#!/usr/bin/env node
+var fs = require('fs');
+var path = require('path');
+var program = require('commander');
+var utils = require('../lib/utils');
+
+program
+  .version('0.0.1');
+
+program
+  .command('add')
+  .description('Adds a local repository to proxy-config.json')
+  .option('-d, --proxy-storage-dir [proxyStorageDir]', 'Specify the proxy storage directory', utils.expandAndResolve,
+    utils.expandAndResolve('~/.component-proxy'))
+  .option(
+    '-s, --source-dir [sourceDir]',
+    'Specify the directory of the compoment.',
+    utils.expandAndResolve,
+    utils.expandAndResolve('./'))
+  .action(add);
+
+program.command('remove')
+  .description('Removes a local repository to proxy-config.json')
+  .option('-d, --proxy-storage-dir [proxyStorageDir]', 'Specify the proxy storage directory', utils.expandAndResolve,
+    utils.expandAndResolve('~/.component-proxy'))
+  .option(
+    '-s, --source-dir [sourceDir]',
+    'Specify the directory of the component.',
+    utils.expandAndResolve,
+    utils.expandAndResolve('./'))
+  .action(remove);
+
+program.command('*')
+  .action(function() {
+    console.log('Invalid command.');
+  });
+
+program.parse(process.argv);
+
+function add(cmd) {
+  main(true, cmd)
+}
+
+function remove(cmd) {
+  main(false, cmd);
+}
+
+function main(add, cmd) {
+  var proxyConfig = loadProxyConfigJson(cmd);
+  var componentJson = loadComponentJson(cmd);
+
+  var locals = proxyConfig.localRepos;
+  if (locals == null) {
+    locals = proxyConfig.localRepos = {}
+  }
+
+  if (add) {
+    var local = locals[componentJson.repo];
+    if (local == null) {
+      local = locals[componentJson.repo] = {};
+    }
+
+    local.path = cmd.sourceDir;
+
+  } else {
+    delete locals[componentJson.repo];
+  }
+
+  try {
+    var configJsonPath = path.resolve(cmd.proxyStorageDir, 'proxy-config.json');
+    fs.writeFileSync(configJsonPath, JSON.stringify(proxyConfig, undefined, 2));
+  } catch (err) {
+    console.error(errorMessage);
+    console.error(err);
+    process.exit(1);
+  }
+
+}
+
+
+function loadProxyConfigJson(cmd) {
+  return loadJson(
+    cmd.proxyStorageDir,
+    'proxy-config.json',
+    'There was an issue loading the proxy-config.json file.');
+}
+
+function loadComponentJson(cmd) {
+  return loadJson(
+    cmd.sourceDir,
+    'component.json',
+    'There was an issue loading the component.json in the source directory.');
+}
+
+function loadJson(dirName, fileName, errorMessage) {
+  var json;
+  try {
+    var configJsonPath = path.resolve(dirName, fileName);
+    json = JSON.parse(fs.readFileSync(configJsonPath, { encoding: 'utf-8' }));
+  } catch (err) {
+    console.error(errorMessage);
+    console.error(err);
+    process.exit(1);
+  }
+
+  return json;
+}
