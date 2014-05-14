@@ -7,6 +7,11 @@ var utils = require('../lib/utils');
 program
   .version('0.0.1');
 
+/**
+ * This is the add command, it basically adds the specified source directory
+ * to the proxy-config.json file as a localRepo.  Defaults to the current
+ * directory.
+ */
 program
   .command('add')
   .description('Adds a local repository to proxy-config.json')
@@ -19,6 +24,11 @@ program
     utils.expandAndResolve('./'))
   .action(add);
 
+/**
+ * This is the add command, it basically removes the specified source directory
+ * to the proxy-config.json file as a localRepo.  Defaults to the current
+ * directory.
+ */
 program.command('remove')
   .description('Removes a local repository to proxy-config.json')
   .option('-d, --proxy-storage-dir [proxyStorageDir]', 'Specify the proxy storage directory', utils.expandAndResolve,
@@ -45,27 +55,41 @@ function remove(cmd) {
   main(false, cmd);
 }
 
+/**
+ * Performs the work of adding or removing the specfied directory
+ * to proxy-config.json.
+ *
+ * @param add - True to add, false to remove
+ * @param cmd - The Command object from Commander
+ */
 function main(add, cmd) {
+  // Load the needed configuration files
   var proxyConfig = loadProxyConfigJson(cmd);
   var componentJson = loadComponentJson(cmd);
 
+  // Access localRepos in the proxy config or create it if its not there
   var locals = proxyConfig.localRepos;
   if (locals == null) {
     locals = proxyConfig.localRepos = {}
   }
 
+  // If we're adding then add in the 'repo' value from the component.json
+  // in the source directory
   if (add) {
     var local = locals[componentJson.repo];
     if (local == null) {
       local = locals[componentJson.repo] = {};
     }
 
+    // Set the path to the source directory specified
     local.path = cmd.sourceDir;
 
   } else {
+    // Removes the component from the local repos if it exists
     delete locals[componentJson.repo];
   }
 
+  // Write the updated config file back to disk
   try {
     var configJsonPath = path.resolve(cmd.proxyStorageDir, 'proxy-config.json');
     fs.writeFileSync(configJsonPath, JSON.stringify(proxyConfig, undefined, 2));
@@ -77,7 +101,12 @@ function main(add, cmd) {
 
 }
 
-
+/**
+ * Loads proxy-config.json
+ *
+ * @param cmd
+ * @returns {*} - proxy configuration
+ */
 function loadProxyConfigJson(cmd) {
   return loadJson(
     cmd.proxyStorageDir,
@@ -85,6 +114,12 @@ function loadProxyConfigJson(cmd) {
     'There was an issue loading the proxy-config.json file.');
 }
 
+/**
+ * Loads the component.json file in the source directory.
+ *
+ * @param cmd
+ * @returns {*} - component configuration
+ */
 function loadComponentJson(cmd) {
   return loadJson(
     cmd.sourceDir,
@@ -92,6 +127,14 @@ function loadComponentJson(cmd) {
     'There was an issue loading the component.json in the source directory.');
 }
 
+/**
+ * Generic function to load a JSON file into an object.
+ *
+ * @param dirName
+ * @param fileName
+ * @param errorMessage
+ * @returns {*}
+ */
 function loadJson(dirName, fileName, errorMessage) {
   var json;
   try {
