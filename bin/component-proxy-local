@@ -1,0 +1,191 @@
+#!/usr/bin/env node
+var fs = require('fs');
+var path = require('path');
+var program = require('commander');
+var utils = require('../lib/utils');
+
+program
+  .version('0.0.1');
+
+/**
+ * This is the add command, it basically adds the specified source directory
+ * to the proxy-config.json file as a localRepo.  Defaults to the current
+ * directory.
+ */
+program
+  .command('add')
+  .description('Adds a local repository to proxy-config.json')
+  .option('-d, --proxy-storage-dir [proxyStorageDir]', 'Specify the proxy storage directory', utils.expandAndResolve,
+    utils.expandAndResolve('~/.component-proxy'))
+  .option(
+    '-s, --source-dir [sourceDir]',
+    'Specify the directory of the compoment.',
+    utils.expandAndResolve,
+    utils.expandAndResolve('./'))
+  .action(main);
+
+/**
+ * This is the remove command, it basically removes the specified source directory
+ * to the proxy-config.json file as a localRepo.  Defaults to the current
+ * directory.
+ */
+program.command('remove')
+  .description('Removes a local repository to proxy-config.json')
+  .option('-d, --proxy-storage-dir [proxyStorageDir]', 'Specify the proxy storage directory', utils.expandAndResolve,
+    utils.expandAndResolve('~/.component-proxy'))
+  .option(
+    '-s, --source-dir [sourceDir]',
+    'Specify the directory of the component.',
+    utils.expandAndResolve,
+    utils.expandAndResolve('./'))
+  .action(main);
+
+/**
+ * This is the remove locals command, it basically removes the specified source directory
+ * to the proxy-config.json file as a localRepo.  Defaults to the current
+ * directory.
+ */
+program.command('clear')
+  .description('Removes a local repository to proxy-config.json')
+  .option('-d, --proxy-storage-dir [proxyStorageDir]', 'Specify the proxy storage directory', utils.expandAndResolve,
+  utils.expandAndResolve('~/.component-proxy'))
+  .action(main);
+
+program.on('--help', function(){
+  console.log('  Examples:');
+  console.log('');
+  console.log('    $ component-proxy-local add');
+  console.log('    $ component-proxy-local add -s ./lib/foo -d ~/.component-proxy');
+  console.log('    $ component-proxy-local remove');
+  console.log('    $ component-proxy-local remove -s ./lib/foo -d ~/.component-proxy');
+  console.log('    $ component-proxy-local clear');
+  console.log('');
+});
+
+program.command('*')
+  .action(function() {
+    console.log('Invalid command.');
+  });
+
+var COMMANDS = {
+  add: add,
+  remove: remove,
+  clear: clear
+};
+
+program.parse(process.argv);
+
+/**
+ * Performs the work of adding or removing the specfied directory
+ * to proxy-config.json.
+ *
+ * @param add - True to add, false to remove
+ * @param cmd - The Command object from Commander
+ */
+function main(cmd) {
+  // Load the needed configuration files
+  var proxyConfig = loadProxyConfigJson(cmd);
+
+  var componentJson = undefined;
+  if (cmd.sourceDir) {
+    componentJson = loadComponentJson(cmd);
+  }
+
+  COMMANDS[cmd._name](cmd, componentJson, proxyConfig);
+
+  // Write the updated config file back to disk
+  try {
+    var configJsonPath = path.resolve(cmd.proxyStorageDir, 'proxy-config.json');
+    fs.writeFileSync(configJsonPath, JSON.stringify(proxyConfig, undefined, 2));
+  } catch (err) {
+    console.error(errorMessage);
+    console.error(err);
+    process.exit(1);
+  }
+}
+
+function add(cmd, componentJson, proxyConfig) {
+  if (componentJson == undefined) {
+    throw new Error('The file component.json must exist in the source directory');
+  }
+  var localRepos = proxyConfig.localRepos;
+  if (localRepos == null) {
+    localRepos = proxyConfig.localRepos = {}
+  }
+
+  // Add in the 'repo' value from the component.json in the source directory
+  var local = localRepos[componentJson.repo];
+  if (local == null) {
+    local = localRepos[componentJson.repo] = {};
+  }
+
+  // Set the path to the source directory specified
+  local.path = cmd.sourceDir;
+}
+
+function remove(cmd, componentJson, proxyConfig) {
+  if (componentJson == undefined) {
+    throw new Error('The file component.json must exist in the source directory');
+  }
+
+  if (proxyConfig.localRepos  == null) {
+    return;
+  }
+
+  // Removes the component from the local repos if it exists
+  delete proxyConfig.localRepos[componentJson.repo];
+}
+
+function clear(cmd, componentJson, proxyConfig) {
+  delete proxyConfig.localRepos;
+}
+
+
+
+/**
+ * Loads proxy-config.json
+ *
+ * @param cmd
+ * @returns {*} - proxy configuration
+ */
+function loadProxyConfigJson(cmd) {
+  return loadJson(
+    cmd.proxyStorageDir,
+    'proxy-config.json',
+    'There was an issue loading the proxy-config.json file.');
+}
+
+/**
+ * Loads the component.json file in the source directory.
+ *
+ * @param cmd
+ * @returns {*} - component configuration
+ */
+function loadComponentJson(cmd) {
+  return loadJson(
+    cmd.sourceDir,
+    'component.json',
+    'There was an issue loading the component.json in the source directory.');
+}
+
+/**
+ * Generic function to load a JSON file into an object.
+ *
+ * @param dirName
+ * @param fileName
+ * @param errorMessage
+ * @returns {*}
+ */
+function loadJson(dirName, fileName, errorMessage) {
+  var json;
+  try {
+    var configJsonPath = path.resolve(dirName, fileName);
+    json = JSON.parse(fs.readFileSync(configJsonPath, { encoding: 'utf-8' }));
+  } catch (err) {
+    console.error(errorMessage);
+    console.error(err);
+    process.exit(1);
+  }
+
+  return json;
+}
