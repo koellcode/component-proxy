@@ -58,6 +58,7 @@ program.on('--help', function(){
   console.log('    $ component-proxy-local add -s ./lib/foo -d ~/.component-proxy');
   console.log('    $ component-proxy-local remove');
   console.log('    $ component-proxy-local remove -s ./lib/foo -d ~/.component-proxy');
+  console.log('    $ component-proxy-local clear');
   console.log('');
 });
 
