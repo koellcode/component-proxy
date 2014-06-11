@@ -6,7 +6,7 @@
     "component": "*",
     "mime": "1.2.x",
     "mkdirp": "0.3.x",
-    "express": "3.5.x",
+    "express": "3.9.x",
     "commander": "1.3.2",
     "superagent": "0.17.x",
     "github": "0.1.x",
